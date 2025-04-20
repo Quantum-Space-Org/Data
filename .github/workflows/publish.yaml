@@ -6,8 +6,8 @@ on:
       - "v*.*.*"
 
 permissions:
-  packages: write
   contents: read
+  packages: write
 
 jobs:
   publish:
@@ -21,38 +21,40 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: "8.0.x"
-          # source-url: https://nuget.pkg.github.com/Quantum-Space-Org/index.json
-        env:
-          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup NuGet authentication
+      - name: Authenticate to GitHub Packages
         run: |
           if dotnet nuget list source | grep -q "github"; then
             echo "🔄 Updating existing GitHub NuGet source..."
             dotnet nuget update source github \
               --source "https://nuget.pkg.github.com/Quantum-Space-Org/index.json" \
-              --username ${{ github.actor }} \
-              --password ${{ secrets.GITHUB_TOKEN }} \
+              --username "${{ github.actor }}" \
+              --password "${{ secrets.GITHUB_TOKEN }}" \
               --store-password-in-clear-text
           else
             echo "➕ Adding GitHub NuGet source..."
             dotnet nuget add source "https://nuget.pkg.github.com/Quantum-Space-Org/index.json" \
               --name github \
-              --username ${{ github.actor }} \
-              --password ${{ secrets.GITHUB_TOKEN }} \
+              --username "${{ github.actor }}" \
+              --password "${{ secrets.GITHUB_TOKEN }}" \
               --store-password-in-clear-text
           fi
 
-      - name: Run build script
+      - name: 🔄 Restore dependencies
+        run: dotnet restore Quantum.Database.sln
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔨 Build the project
         run: bash IaaC/build.sh
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run publish script
+      - name: 🚀 Publish packages
         run: bash IaaC/publish.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Done
+      - name: ✅ Done
         run: echo "🎉 Package published from tag!"
