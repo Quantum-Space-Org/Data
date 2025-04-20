@@ -12,5 +12,6 @@ dotnet restore Quantum.Database.sln
 echo "🔨 Building solution in $(pwd) ..."
 dotnet build Quantum.Database.sln --configuration $CONFIG
 
+
 echo "📦 Packing..."
 dotnet pack Quantum.Database.sln --configuration $CONFIG --output $OUTPUT_DIR
