@@ -24,13 +24,24 @@ jobs:
           # source-url: https://nuget.pkg.github.com/Quantum-Space-Org/index.json
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Setup NuGet authentication
         run: |
-          dotnet nuget add source "https://nuget.pkg.github.com/Quantum-Space-Org/index.json" \
-            --name quantu.github \
-            --username ${{ github.actor }} \
-            --password ${{ secrets.GITHUB_TOKEN }} \
-            --store-password-in-clear-text
+          if dotnet nuget list source | grep -q "github"; then
+            echo "🔄 Updating existing GitHub NuGet source..."
+            dotnet nuget update source github \
+              --source "https://nuget.pkg.github.com/Quantum-Space-Org/index.json" \
+              --username ${{ github.actor }} \
+              --password ${{ secrets.GITHUB_TOKEN }} \
+              --store-password-in-clear-text
+          else
+            echo "➕ Adding GitHub NuGet source..."
+            dotnet nuget add source "https://nuget.pkg.github.com/Quantum-Space-Org/index.json" \
+              --name github \
+              --username ${{ github.actor }} \
+              --password ${{ secrets.GITHUB_TOKEN }} \
+              --store-password-in-clear-text
+          fi
 
       - name: Run build script
         run: bash IaaC/build.sh
