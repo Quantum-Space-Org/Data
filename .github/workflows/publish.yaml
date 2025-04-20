@@ -21,14 +21,28 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: "8.0.x"
+          source-url: https://nuget.pkg.github.com/Quantum-Space-Org/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up NuGet authentication
+        run: |
+          dotnet nuget add source "https://nuget.pkg.github.com/Quantum-Space-Org/index.json" \
+            --name github \
+            --username ${{ github.actor }} \
+            --password ${{ secrets.GITHUB_TOKEN }} \
+            --store-password-in-clear-text
 
       - name: Run build script
         run: bash IaaC/build.sh
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run publish script
         run: bash IaaC/publish.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Done
         run: echo "🎉 Package published from tag!"
