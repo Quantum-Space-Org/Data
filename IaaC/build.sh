@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 
 CONFIG="Release"
 OUTPUT_DIR="./build"
-
+ 
 echo "🔄 Restoring dependencies..."
 dotnet restore Quantum.Database.sln
 
